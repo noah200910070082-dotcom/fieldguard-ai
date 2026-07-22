@@ -14,6 +14,7 @@ import {
   Menu,
   Pause,
   Play,
+  PlugZap,
   Radio,
   ScanLine,
   ShieldCheck,
@@ -27,6 +28,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import DashboardPanels from './DashboardPanels'
 
 const zones = [
   { id: 'A-01', crop: '番茄', risk: 18, trend: -3, status: 'healthy', temp: 25.4, humidity: 68 },
@@ -64,6 +66,9 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [now, setNow] = useState(new Date())
+  const [activePanel, setActivePanel] = useState('overview')
+  const [guideStep, setGuideStep] = useState(0)
+  const [showGuide, setShowGuide] = useState(() => window.localStorage.getItem('fieldguard-guide-seen') !== '1')
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
@@ -84,6 +89,23 @@ function App() {
   const runAction = (label) => {
     setNotice(`${label}指令已下發，巡田車正在前往 ${selectedZone.id}`)
     window.setTimeout(() => setNotice(''), 3800)
+  }
+
+  const showNotice = (message) => {
+    setNotice(message)
+    window.setTimeout(() => setNotice(''), 3800)
+  }
+
+  const openDashboard = (panel = 'overview') => {
+    setActivePanel(panel)
+    window.setTimeout(() => document.querySelector('#monitor')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
+  }
+
+  const finishGuide = () => {
+    window.localStorage.setItem('fieldguard-guide-seen', '1')
+    setShowGuide(false)
+    setGuideStep(0)
+    openDashboard('overview')
   }
 
   const selectZone = (zone) => {
@@ -107,7 +129,7 @@ function App() {
         </nav>
         <div className="header-actions">
           <span className="online"><i /> 系統在線</span>
-          <a className="header-cta" href="#monitor">進入控制台 <ArrowRight size={15} /></a>
+          <button className="header-cta button-3d" onClick={() => openDashboard('overview')}>進入控制台 <ArrowRight size={15} /></button>
         </div>
         <button className="menu-button" onClick={() => setMenuOpen((v) => !v)} aria-label="開啟選單">
           {menuOpen ? <X /> : <Menu />}
@@ -115,12 +137,13 @@ function App() {
       </header>
 
       <section className="hero" id="top">
+        <div className="animated-farm-bg" aria-hidden="true"><i /><i /><i /><span /><span /></div>
         <div className="hero-copy">
           <div className="eyebrow"><Sparkles size={14} /> 多模態感知 × 具身智能</div>
           <h1>讓每一株作物<br />都被<span>提前看見。</span></h1>
           <p className="hero-lead">融合 RGB、多光譜與環境數據，讓巡田機器人自主完成「感知、決策、執行、反饋」的病蟲害防治閉環。</p>
           <div className="hero-buttons">
-            <a className="button primary" href="#monitor">查看即時農田 <ArrowDown size={17} /></a>
+            <button className="button primary button-3d" onClick={() => openDashboard('overview')}>立即進入控制台 <ArrowDown size={17} /></button>
             <a className="button ghost" href="#architecture">了解系統原理 <ChevronRight size={17} /></a>
           </div>
           <div className="proof-row">
@@ -177,10 +200,11 @@ function App() {
           <aside className="dash-sidebar">
             <div className="mini-brand"><span><Leaf size={17} /></span> 智護田控制台</div>
             <div className="side-title">示範農場</div>
-            <button className="side-active"><Activity size={17} /> 總覽 <span>6</span></button>
-            <button><ShieldCheck size={17} /> 預警中心 <b>2</b></button>
-            <button><Bot size={17} /> 機器人</button>
-            <button><Radio size={17} /> 感測節點</button>
+            <button className={activePanel === 'overview' ? 'side-active' : ''} onClick={() => setActivePanel('overview')}><Activity size={17} /> 總覽 <span>6</span></button>
+            <button className={activePanel === 'alerts' ? 'side-active' : ''} onClick={() => setActivePanel('alerts')}><ShieldCheck size={17} /> 預警中心 <b>2</b></button>
+            <button className={activePanel === 'robot' ? 'side-active' : ''} onClick={() => setActivePanel('robot')}><Bot size={17} /> 機器人</button>
+            <button className={activePanel === 'sensors' ? 'side-active' : ''} onClick={() => setActivePanel('sensors')}><Radio size={17} /> 感測節點</button>
+            <button className={activePanel === 'integration' ? 'side-active' : ''} onClick={() => setActivePanel('integration')}><PlugZap size={17} /> 裝置接入 <i>NEW</i></button>
             <div className="side-spacer" />
             <div className="robot-mini">
               <div><Bot size={18} /><span><strong>FG-01</strong><small>{patrolling ? '巡田中' : '已暫停'}</small></span></div>
@@ -191,6 +215,12 @@ function App() {
           </aside>
 
           <div className="dash-main">
+            <div className="mobile-workspace-tabs">
+              {[
+                ['overview', '總覽'], ['alerts', '預警'], ['robot', '機器人'], ['sensors', '感測'], ['integration', '接入'],
+              ].map(([key, label]) => <button key={key} className={activePanel === key ? 'active' : ''} onClick={() => setActivePanel(key)}>{label}</button>)}
+            </div>
+            {activePanel === 'overview' ? <>
             <div className="dash-topline">
               <div><strong>上午好，守田人</strong><span>全場 6 個地塊，2 個需要關注</span></div>
               <div className="weather"><Sun size={20} /><span><strong>26.8°C</strong><small>晴 · 適宜巡田</small></span></div>
@@ -256,6 +286,7 @@ function App() {
                 </div>
               </article>
             </div>
+            </> : <DashboardPanels activePanel={activePanel} patrolling={patrolling} setPatrolling={setPatrolling} notify={showNotice} />}
           </div>
         </div>
       </section>
@@ -335,6 +366,30 @@ function App() {
         <p>多模態感知與 AI 驅動的農作物病蟲害智能防治機器人系統</p>
         <span>方向 2 · 智慧農業與鄉村數智建設 · 2026</span>
       </footer>
+
+      <button className="floating-console-3d" onClick={() => openDashboard('overview')}><Activity />控制台</button>
+      <button className="guide-trigger" onClick={() => { setGuideStep(0); setShowGuide(true) }}><Sparkles />新手指引</button>
+
+      {showGuide && (
+        <div className="guide-overlay" role="dialog" aria-modal="true" aria-label="智護田新手指引">
+          <div className="guide-card">
+            <button className="guide-close" onClick={finishGuide} aria-label="關閉新手指引"><X /></button>
+            <span className="guide-count">0{guideStep + 1} / 03</span>
+            <div className="guide-icon">{guideStep === 0 ? <Activity /> : guideStep === 1 ? <ShieldCheck /> : <PlugZap />}</div>
+            <h3>{['先看全田風險', '再處理預警與任務', '最後接入真實裝置'][guideStep]}</h3>
+            <p>{[
+              '點擊地塊即可切換溫濕度、風險分數與建議處置；拖動風險滑桿可演示模型分級。',
+              '左側可進入預警中心、機器人與感測節點。按鈕都可以操作，適合直接向評審演示。',
+              '在「裝置接入」填入 MQTT WebSocket、API 和裝置 ID，即可替換目前的模擬資料。',
+            ][guideStep]}</p>
+            <div className="guide-dots"><i className={guideStep === 0 ? 'active' : ''} /><i className={guideStep === 1 ? 'active' : ''} /><i className={guideStep === 2 ? 'active' : ''} /></div>
+            <div className="guide-actions">
+              <button onClick={finishGuide}>跳過，直接進入</button>
+              <button className="guide-next button-3d" onClick={() => guideStep < 2 ? setGuideStep((step) => step + 1) : finishGuide()}>{guideStep < 2 ? '下一步' : '開始使用'} <ArrowRight /></button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {notice && <div className="toast"><Check size={17} /> {notice}</div>}
     </main>
