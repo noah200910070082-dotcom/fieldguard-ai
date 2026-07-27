@@ -38,7 +38,7 @@ import { useAppStore } from '@/stores/app-store'
 不使用 React Router 做页面切换。通过 Zustand `activePanel` 状态切换 5 个功能面板（相当于 5 个"页面"），每个面板位于 `src/features/<name>/`：
 
 | Panel Key | 组件 | 功能 |
-|---|---|---|
+| --- | --- | --- |
 | `overview` | `features/digital-twin/OverviewPanel` | 3D 数字孪生 + AI 研判 |
 | `alerts` | `features/alerts/AlertsPanel` | 预警中心 |
 | `robot` | `features/robot/RobotPanel` | 机器人/巡逻车控制 |
@@ -54,7 +54,7 @@ import { useAppStore } from '@/stores/app-store'
 
 ### 数据流：传感器 → Store → UI
 
-```
+```text
 wsSimulator (services/websocket-sim.ts)
   每 2-3 秒广播 31 条 SensorReading
     ↓
@@ -77,6 +77,7 @@ useSensorStore.updateReading()
 使用 `i18next` + `react-i18next`。语言包在 `src/i18n/locales/`，支持 `zh-TW`（默认）、`zh-CN`、`en` 三种语言。用户选择持久化到 `localStorage` key `fieldguard-lang`。
 
 组件中使用 `useTranslation()` hook：
+
 ```tsx
 const { t } = useTranslation()
 <span>{t('brand')}</span>  // → 智護田 / 智护田 / FieldGuard
@@ -84,7 +85,18 @@ const { t } = useTranslation()
 
 ### 3D 场景
 
-`features/digital-twin/FarmScene3D.tsx` 使用 `@react-three/fiber` + `@react-three/drei` + `three.js` 渲染农场数字孪生。`OverviewPanel` 负责组合 3D 场景与 AI 研判面板。
+`FarmScene3D.tsx` 实际是一个 `<iframe>` 加载 `public/farm-twin.html`（独立 Three.js 场景，不使用 React）。`@react-three/*` 依赖已安装但当前未直接使用。`OverviewPanel` 把 3D iframe 与 AI 研判面板组合在一起。
+
+### CSS / 字体
+
+[src/index.css](src/index.css) 使用 Tailwind v4 原生 CSS 配置（`@import 'tailwindcss'` + `@theme` 块），无 `tailwind.config.js`。自定义了品牌色 token（`--color-ink`, `--color-cream`, `--color-lime` 等）和 5 级字体栈：`--font-display` (Playfair Display)、`--font-heading` (Noto Serif TC)、`--font-body` (Noto Sans TC)、`--font-ui` (Inter)、`--font-mono` (DM Mono)。基准字号 18px。
+
+### 目录约定
+
+- `src/hooks/` — 自定义 hooks 目录（当前为空，后续自定义 hook 放这里）
+- `src/components/layout/` — 全局布局组件（Topbar, ZoneRail, Toast 等）
+- `src/components/shared/` 和 `src/components/ui/` — 预留给可复用组件（当前为空）
+- `src/features/<name>/` — 各功能面板，内部可包含面板专属的子组件
 
 ### 图表
 
