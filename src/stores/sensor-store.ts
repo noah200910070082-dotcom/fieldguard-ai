@@ -152,12 +152,11 @@ export const useSensorStore = create<SensorState>((set, get) => ({
       diseaseRisk: Math.round(latest.diseaseRisk * 100) / 100,
     }
 
-    const history = state.chartHistory[zoneId] ?? []
-    history.push(point)
-    if (history.length > MAX_HISTORY) history.shift()
+    const prev = state.chartHistory[zoneId] ?? []
+    const history = [...prev, point].slice(-MAX_HISTORY)
 
     set({
-      chartHistory: { ...state.chartHistory, [zoneId]: [...history] },
+      chartHistory: { ...state.chartHistory, [zoneId]: history },
     })
   },
 }))

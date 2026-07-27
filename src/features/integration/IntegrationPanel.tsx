@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Bot,
@@ -36,9 +36,10 @@ export default function IntegrationPanel() {
   })
 
   const [connection, setConnection] = useState<ConnState>('idle')
+  const timerRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
-    return () => clearTimeout((window as unknown as Record<string, number>).__fieldguardConnectionTimer)
+    return () => clearTimeout(timerRef.current)
   }, [])
 
   const update = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -46,7 +47,7 @@ export default function IntegrationPanel() {
 
   const testConnection = () => {
     setConnection('testing')
-    ;(window as unknown as Record<string, number>).__fieldguardConnectionTimer = window.setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       setConnection('success')
       showNotice(t('connectionSuccess'))
     }, 1000)

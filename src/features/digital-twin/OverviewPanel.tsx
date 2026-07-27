@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Activity,
@@ -32,18 +32,10 @@ export default function OverviewPanel() {
   const showNotice = useAppStore((s) => s.showNotice)
   const selectZone = useAppStore((s) => s.setSelectedZoneId)
 
-  const [now, setNow] = useState(new Date())
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
   const sceneZones = useMemo(
     () => zones.map((z) => (z.id === selectedZoneId ? { ...z, risk } : z)),
     [selectedZoneId, risk],
   )
-
-  const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false })
 
   return (
     <div className="max-w-[1600px] mx-auto">
@@ -57,7 +49,7 @@ export default function OverviewPanel() {
             {t('dashboardTitle')}
           </h1>
           <p className="text-sm text-[#7c8c85]">
-            {timeStr} · {t('dashboardSub')}
+            <ClockDisplay /> · {t('dashboardSub')}
           </p>
         </div>
         <div className="flex gap-3 max-[620px]:w-full">
@@ -175,6 +167,16 @@ function DecisionSidebar({ t, risk, setRisk, selectedZoneId, showNotice }: {
     </aside>
   )
 }
+
+// ═══ 时钟 (独立组件, 避免每秒全页重渲染) ═══
+const ClockDisplay = memo(function ClockDisplay() {
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(t)
+  }, [])
+  return <>{now.toLocaleTimeString('zh-TW', { hour12: false })}</>
+})
 
 // ═══ MetricCard ═══
 function MetricCard({ icon: Icon, color, label, value, sub }: {
