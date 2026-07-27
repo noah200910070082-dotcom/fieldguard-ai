@@ -1,0 +1,87 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #18372e;
+  --color-ink-2: #24493e;
+  --color-cream: #f3f1e9;
+  --color-paper: #faf9f4;
+  --color-line: #d8d7cf;
+  --color-green: #4d8c62;
+  --color-lime: #c8e165;
+  --color-orange: #e97954;
+  --color-muted: #687b74;
+
+  --font-display: 'Playfair Display', 'Noto Serif TC', Georgia, serif;
+  --font-heading: 'Noto Serif TC', 'Noto Sans TC', Georgia, serif;
+  --font-body: 'Noto Sans TC', 'Inter', system-ui, sans-serif;
+  --font-ui: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+    font-size: 18px;
+  }
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+  }
+  button,
+  input {
+    font: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+/* Map fixes */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* AlertBar 滚动动画 */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.33%); }
+}
+
+/* Toast 弹出动画 */
+@keyframes toast-in {
+  from { transform: translateY(12px); opacity: 0; }
+}
+
+/* 面板切换动画 */
+@keyframes workspace-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* 抽屉滑入 */
+@keyframes drawer-in {
+  from { transform: translateX(50px); opacity: 0; }
+}
+
+/* 背景环动画 */
+@keyframes control-orbit {
+  50% { transform: translate(38px, -28px) scale(1.06); opacity: 0.55; }
+}
+
+/* 机器人雷达脉冲 */
+@keyframes robot-radar {
+  from { transform: scale(0.55); opacity: 0.8; }
+  to { transform: scale(1.4); opacity: 0; }
+}
+
+/* 数据流条形动画 */
+@keyframes stream-pulse {
+  50% { filter: brightness(1.18); transform: scaleY(0.88); transform-origin: bottom; }
+}
