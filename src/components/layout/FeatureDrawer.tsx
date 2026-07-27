@@ -24,7 +24,7 @@ export default function FeatureDrawer() {
     setHelpOpen(false)
   }
 
-  const featureTags: string[] = t('featureTags', { returnObjects: true }) ?? []
+  const featureTags: string[] = (t('featureTags', { returnObjects: true }) as unknown as string[]) ?? []
 
   return (
     <div

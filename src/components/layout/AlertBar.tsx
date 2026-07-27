@@ -7,7 +7,6 @@
  * - CSS 动画实现自动滚动，点击可确认告警
  */
 
-import { useEffect, useState } from 'react'
 import { ShieldCheck, AlertTriangle, X } from 'lucide-react'
 import { useSensorStore } from '@/stores/sensor-store'
 

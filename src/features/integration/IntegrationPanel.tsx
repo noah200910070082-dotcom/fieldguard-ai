@@ -38,7 +38,7 @@ export default function IntegrationPanel() {
   const [connection, setConnection] = useState<ConnState>('idle')
 
   useEffect(() => {
-    return () => clearTimeout(window.__fieldguardConnectionTimer)
+    return () => clearTimeout((window as unknown as Record<string, number>).__fieldguardConnectionTimer)
   }, [])
 
   const update = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -46,7 +46,7 @@ export default function IntegrationPanel() {
 
   const testConnection = () => {
     setConnection('testing')
-    window.__fieldguardConnectionTimer = setTimeout(() => {
+    ;(window as unknown as Record<string, number>).__fieldguardConnectionTimer = window.setTimeout(() => {
       setConnection('success')
       showNotice(t('connectionSuccess'))
     }, 1000)

@@ -41,11 +41,6 @@ export default function OverviewPanel() {
     [selectedZoneId, risk],
   )
 
-  const selectedZone = useMemo(
-    () => zones.find((z) => z.id === selectedZoneId) ?? zones[0],
-    [selectedZoneId],
-  )
-
   const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false })
 
   return (
