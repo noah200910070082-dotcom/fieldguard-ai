@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  Activity,
   AlertTriangle,
   ArrowRight,
   Bot,
@@ -10,6 +11,7 @@ import {
   Leaf,
   Pause,
   Play,
+  ScanLine,
   Sparkles,
   Thermometer,
   Volume2,
@@ -77,10 +79,13 @@ export default function OverviewPanel() {
         </div>
       </div>
 
-      {/* 3D 场景 — 暗色底 + 圆角 */}
-      <article className="relative overflow-hidden rounded-xl border border-[#c5cfc5] bg-black shadow-lg" style={{ minHeight: '520px' }}>
-        <FarmScene3D />
-      </article>
+      {/* 3D 场景 + AI 研判 */}
+      <div className="grid gap-[18px] grid-cols-[1fr_370px] max-[900px]:grid-cols-1">
+        <article className="relative overflow-hidden rounded-xl border border-[#c5cfc5] bg-black shadow-lg" style={{ minHeight: '520px' }}>
+          <FarmScene3D />
+        </article>
+        <DecisionSidebar t={t} risk={risk} setRisk={setRisk} selectedZoneId={selectedZoneId} showNotice={showNotice} />
+      </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-5 gap-3.5 my-[22px] max-[1180px]:grid-cols-3 max-[620px]:grid-cols-2">
@@ -98,6 +103,76 @@ export default function OverviewPanel() {
         <ResourcePanel t={t} showNotice={showNotice} />
       </div>
     </div>
+  )
+}
+
+// ═══ AI 研判侧边栏 ═══
+function DecisionSidebar({ t, risk, setRisk, selectedZoneId, showNotice }: {
+  t: (k: string) => string; risk: number; setRisk: (v: number) => void
+  selectedZoneId: string; showNotice: (m: string) => void
+}) {
+  const { icon: Icon, label, color, action } = useMemo(() => {
+    if (risk < 30) return { icon: Activity, label: t('lowRisk'), color: '#5f9b6c', action: t('regularMonitor') }
+    if (risk < 50) return { icon: ScanLine, label: t('needAttention'), color: '#c5a542', action: t('sendCarCheck') }
+    if (risk < 70) return { icon: Bot, label: t('warning'), color: '#db883f', action: t('mechGrasp') }
+    return { icon: Droplets, label: t('highRisk'), color: '#d7654e', action: t('preciseSpray') }
+  }, [risk, t])
+
+  const executeAction = () => {
+    showNotice(`${selectedZoneId}：${action}${t('taskAdded')}`)
+    if (risk >= 70) setTimeout(() => setRisk(Math.max(0, risk - 18)), 700)
+  }
+
+  const zone = zones.find(z => z.id === selectedZoneId) ?? zones[0]
+
+  return (
+    <aside className="p-5 border border-[#d8ded6] rounded-xl bg-[#fafaf6] shadow-[0_4px_0_#d8ddd6] flex flex-col gap-3 max-[900px]:min-h-0">
+      <div className="flex justify-between items-start">
+        <div><span className="font-mono text-[10px] text-[#699174] tracking-[0.13em]">{t('aiDecision')}</span>
+          <h2 className="mt-1 text-[22px] font-heading text-ink">{selectedZoneId} {t('intelligentAssessment')}</h2>
+        </div>
+        <b className="py-1.5 px-3 rounded-[13px] text-xs font-bold" style={{ background: `${color}18`, color }}>{label}</b>
+      </div>
+
+      {/* Risk gauge */}
+      <div className="w-[120px] h-[120px] mx-auto border-[10px] rounded-full grid place-items-center" style={{ borderColor: color, boxShadow: `inset 0 0 0 8px #edf0ea` }}>
+        <div><strong className="font-mono text-[34px]">{risk}</strong><span className="font-mono text-[10px] text-[#8b9691]">/100</span></div>
+      </div>
+
+      {/* Slider */}
+      <label><span className="flex justify-between text-xs text-[#667970]">{t('riskSim')} <b className="font-mono">{risk}</b></span>
+        <input type="range" min="0" max="100" value={risk} onChange={e => setRisk(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: color }} />
+      </label>
+
+      {/* Factors */}
+      <div className="grid gap-2">
+        {[
+          [t('spectralAnomaly'), Math.min(100, risk + 12)],
+          [t('diseaseArea'), Math.max(4, risk - 8)],
+          [t('envRisk'), zone.humidity],
+          [t('spreadRate'), Math.max(8, risk - 18)],
+        ].map(([l, v]) => (
+          <div key={l as string} className="grid grid-cols-[68px_1fr_26px] items-center gap-2">
+            <span className="text-xs text-[#6b7b74]">{l as string}</span>
+            <i className="h-[5px] bg-[#e7eae4] rounded-full overflow-hidden"><b className="block h-full bg-[#6a9673]" style={{ width: `${v}%` }} /></i>
+            <strong className="text-right font-mono text-xs">{v as number}</strong>
+          </div>
+        ))}
+      </div>
+
+      {/* AI explanation */}
+      <div className="flex gap-2 p-3 bg-[#edf2e7] border-l-[3px] border-[#8eab5b] rounded-md text-xs">
+        <Sparkles className="w-[16px] text-[#638d53] flex-none mt-0.5" />
+        <p className="m-0"><strong>{t('aiExplain')}</strong><br />
+          <span className="text-[#66786f]">{risk >= 70 ? t('explainHigh') : risk >= 30 ? t('explainMid') : t('explainLow')}</span>
+        </p>
+      </div>
+
+      {/* Action button */}
+      <button onClick={executeAction} className="w-full h-11 border-0 rounded-lg bg-[#1f4b3b] text-white flex items-center justify-center gap-2 text-sm font-bold font-ui hover:-translate-y-0.5 active:translate-y-0.5">
+        <Icon className="w-[16px]" />{action}<ArrowRight className="w-[16px] ml-auto mr-2" />
+      </button>
+    </aside>
   )
 }
 

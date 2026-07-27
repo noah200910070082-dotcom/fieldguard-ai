@@ -9,10 +9,10 @@ export default function SensorsPanel() {
   const [testing, setTesting] = useState('')
 
   const devices = [
-    { id: 'ENV-A01', name: `A ${t('esp32Base')}`, type: '溫濕度 / 雨量', value: '25.4°C · 68%', signal: 92, online: true },
-    { id: 'SPEC-B01', name: `B ${t('calibrating')}`, type: 'AS7265x · 18 通道', value: '異常指數 0.84', signal: 86, online: true },
-    { id: 'CAM-B01', name: 'B 區 RGB 相機', type: '1080P · YOLO', value: '推理 4.2 FPS', signal: 78, online: true },
-    { id: 'BASE-C01', name: `C ${t('esp32Base')}`, type: 'ESP32-S3', value: '最後上報 12 分鐘前', signal: 0, online: false },
+    { id: 'ENV-A01', name: `A ${t('esp32Base')}`, typeKey: 'sensorTypeTempHum', value: '25.4°C · 68%', signal: 92, online: true },
+    { id: 'SPEC-B01', name: `B ${t('sensorSpec')}`, typeKey: 'sensorTypeSpectral', value: `${t('anomalyIndex')} 0.84`, signal: 86, online: true },
+    { id: 'CAM-B01', name: t('sensorRGBCam'), typeKey: 'sensorTypeYOLO', value: `${t('inferenceFPS')} 4.2 FPS`, signal: 78, online: true },
+    { id: 'BASE-C01', name: `C ${t('esp32Base')}`, typeKey: 'sensorTypeESP32', value: t('lastReport12m'), signal: 0, online: false },
   ]
 
   const calibrate = (id: string) => {
@@ -50,7 +50,7 @@ export default function SensorsPanel() {
             </div>
             <span className="mt-[22px] font-mono text-[10px] text-[#8d9893]">{d.id}</span>
             <h4 className="my-1 text-[17px] font-ui">{d.name}</h4>
-            <p className="m-0 text-[11px] text-[#8a9691]">{d.type}</p>
+            <p className="m-0 text-[11px] text-[#8a9691]">{t(d.typeKey)}</p>
             <strong className="mt-5 font-mono text-base">{d.value}</strong>
             <div className="my-auto pb-3.5">
               <span className="text-[10px] text-[#8d9893]">{t('signal')} {d.signal}%</span>
