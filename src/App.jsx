@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, Component } from 'react'
 import {
   Activity,
   AlertTriangle,
@@ -29,7 +29,7 @@ import {
 import { I18nProvider, useI18n, LANGUAGES } from './i18n'
 import DashboardPanels from './DashboardPanels'
 
-const FarmScene3D = lazy(() => import('./FarmScene3D'))
+import FarmScene3D from './FarmScene3D'
 
 const zones = [
   { id: 'A-01', crop: '番茄', risk: 18, trend: -3, status: 'healthy', temp: 25.4, humidity: 68 },
@@ -45,6 +45,12 @@ const missionItems = [
   { time: '10:54', titleKey: 'a02Grasp', detailKey: 'a02GraspDetail', state: 'waiting' },
   { time: '11:20', titleKey: 'cRoute', detailKey: 'cRouteDetail', state: 'scheduled' },
 ]
+
+class ErrorBoundary extends Component {
+  constructor(p) { super(p); this.state = { e: null } }
+  static getDerivedStateFromError(e) { return { e } }
+  render() { return this.state.e ? <div style={{color:'#e53935',padding:20}}>3D场景加载失败：{this.state.e.message}<br/><small>请刷新页面</small></div> : this.props.children }
+}
 
 function AppContent() {
   const { t, lang, setLanguage } = useI18n()
@@ -189,9 +195,7 @@ function OverviewPanel({ now, timeStr, selectedZone, selectedZoneId, risk, setRi
       <div className="digital-twin-grid">
         <article className="twin-scene-card">
           <div className="scene-toolbar"><span><i />3D LIVE</span><p>{t('dragRotate')}</p><button onClick={() => showNotice('3D ' + t('viewAngle'))}><Target />{t('viewAngle')}</button></div>
-          <Suspense fallback={<div className="scene-loading"><Bot /><span>{t('load3D')}</span></div>}>
-            <FarmScene3D zones={sceneZones} selectedZoneId={selectedZoneId} patrolling={patrolling} onSelectZone={selectZone} />
-          </Suspense>
+          <ErrorBoundary><FarmScene3D zones={sceneZones} selectedZoneId={selectedZoneId} patrolling={patrolling} onSelectZone={selectZone} /></ErrorBoundary>
           <div className="scene-status-strip">
             <div><span>{t('selectedPlot')}</span><strong>{selectedZoneId}</strong><small>{selectedZone.crop}</small></div>
             <div><span>{t('patrolC')}</span><strong>FG-01</strong><small>{patrolling ? t('autoCruising') : t('paused')}</small></div>
