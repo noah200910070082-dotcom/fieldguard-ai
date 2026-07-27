@@ -27,6 +27,7 @@ export default function OverviewPanel() {
   const { t } = useTranslation()
   const selectedZoneId = useAppStore((s) => s.selectedZoneId)
   const risk = useAppStore((s) => s.risk)
+  const setRisk = useAppStore((s) => s.setRisk)
   const patrolling = useAppStore((s) => s.patrolling)
   const togglePatrolling = useAppStore((s) => s.togglePatrolling)
   const showNotice = useAppStore((s) => s.showNotice)
